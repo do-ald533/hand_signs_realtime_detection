@@ -1,0 +1,113 @@
+[project]
+name = "signlang"
+version = "0.1.0"
+description = "Real-time isolated sign language recognition from a webcam: MediaPipe landmarks + GRU on WLASL100."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "do-ald533", email = "douglas.aldred533@gmail.com" }]
+keywords = ["sign-language", "wlasl", "mediapipe", "pytorch", "gru", "computer-vision", "real-time"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Typing :: Typed",
+]
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "joblib>=1.6.0",
+    "matplotlib>=3.11.2",
+    "mediapipe>=1.1.1",
+    "numpy>=2.4.6",
+    "opencv-contrib-python>=5.0.0.93",
+    "scikit-learn>=1.9.1",
+    "torch>=2.14.1",
+    "tqdm>=4.70.1",
+]
+
+[project.scripts]
+signlang = "signlang.cli:main"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.7.0",
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.3",
+]
+data = [
+    "yt-dlp>=2026.10.26",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.12,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+default-groups = ["dev", "data"]
+
+# CPU-only PyTorch wheels (~200 MB instead of ~2 GB with CUDA libs). The GRU is small enough to
+# train on CPU. For a CUDA build, drop this index/source pair and run `uv lock --upgrade-package torch`.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = [".claude"]  # vendored Claude Code skills, not project code
+
+[tool.ruff.lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # pyflakes
+    "I",       # isort
+    "N",       # pep8-naming
+    "UP",      # pyupgrade
+    "B",       # bugbear
+    "C4",      # comprehensions
+    "SIM",     # simplify
+    "PT",      # pytest style
+    "NPY",     # numpy
+    "PERF",    # perflint
+    "RUF",     # ruff-specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "N806",  # uppercase locals are fine for shapes like (B, T, F)
+    "PT018",  # `assert a == 1 and b == 2` reads fine in small tests
+]
+
+[tool.pyright]
+include = ["src"]  # tests are untyped fixtures and fakes; the library is what needs checking
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config -m 'not slow and not webcam'"
+markers = [
+    "slow: long-running tests (deselect with -m 'not slow')",
+    "webcam: needs a physical camera",
+]
+
+[tool.coverage.run]
+source = ["signlang"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

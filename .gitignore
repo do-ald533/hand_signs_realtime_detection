@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Environments
+.venv/
+.env
+
+# Tooling caches and reports
+.pytest_cache/
+.ruff_cache/
+.pyright/
+.coverage
+.coverage.*
+htmlcov/
+
+# Data and trained weights (large, and WLASL videos must not be redistributed)
+/data/*
+!/data/.gitkeep
+/models/*
+!/models/.gitkeep
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.task
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+
+# Claude Code local state
+.claude/settings.local.json
+.claude
+CLAUDE.md
